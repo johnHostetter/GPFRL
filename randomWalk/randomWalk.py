@@ -13,15 +13,13 @@ def zeros(rows, columns):
     else:
         return np.array([0.0]*rows*columns).reshape(rows, columns)
 
-def ones(rows, columns):
-    if columns == 1:
-        return np.array([1.0]*rows)
-    else:
-        return np.array([1.0]*rows*columns).reshape(rows, columns)
-
 def logsig(n):
     """ Matlab's logsig function """
-    return 1 / (1 + np.exp(-n))
+    try:
+        return 1 / (1 + np.exp(-n))
+    except RuntimeWarning:
+        print('The statement: np.exp(-n) in logsig(n) resulted in an overflow, and an infinite value was produced as a result. Approximating the value to be zero instead.')
+        return 0.0
 
 def randn():
     """ Matlab's normally distributed random number function """
@@ -42,8 +40,8 @@ rewardM = np.ceil(gridSize/2)
 rewardN = rewardM + 1
 startM = 0 # originally 1 in MatLab
 startN = 0 # originally 1 in MatLab
-totalPlays = 100
-totalTrials = 40
+totalPlays = 1 # default is 100
+totalTrials = 40 # default is 40
 
 # variables
 totalNumSteps = zeros(totalTrials, 1)           # total number of steps for each trial over all plays
@@ -95,17 +93,17 @@ for j in range(totalPlays):
                 
             # creating action set avoiding grid borders
             N = m - 1                                           # NOTE: in dissertation, this was 'N = m   1', referring to SARSA and Q-Learning code
-            if N < 0:
-                N = 0
+            if N < 0: # originally N < 1
+                N = 0 # originally N = 1
             E = n + 1
-            if E > gridSize - 1:
-                E = gridSize - 1
+            if E > gridSize - 1: # originally E > gridSize
+                E = gridSize - 1 # originally E = gridSize
             S = m + 1
-            if S > gridSize - 1:
-                S = gridSize - 1
+            if S > gridSize - 1: # originally S > gridSize
+                S = gridSize - 1 # originally S = gridSize
             W = n - 1
-            if W < 0:
-                W = 0
+            if W < 0: # originally W < 1
+                W = 0 # originally W = 1
                 
             # initializing values
             Nu = zeros(totalAgents, 1)
@@ -135,16 +133,16 @@ for j in range(totalPlays):
             
             # take action
             r = zeros(totalAgents, 1)
-            if index == 0: # grid(m-1,n)
+            if index == 0: # grid(m-1,n), originally was index == 1
                 m = N
                 r[index] = np.sign(m-rewardM)
-            elif index == 1: # grid(m,n+1)
+            elif index == 1: # grid(m,n+1), originally was index == 2
                 n = E
                 r[index] = np.sign(rewardN-n)
-            elif index == 2: # grid(m+1,n)
+            elif index == 2: # grid(m+1,n), originally was index == 3
                 m = S
                 r[index] = np.sign(rewardM-m)
-            elif index == 3: # grid(m,n-1)
+            elif index == 3: # grid(m,n-1), originally was index == 4
                 n = W
                 r[index] = np.sign(n-rewardN)
             else:
